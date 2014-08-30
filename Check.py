@@ -1,8 +1,6 @@
 __author__ = 'Liew'
 
-# import httplib
 import requests
-#import socket
 
 status = ""
 server = ""
@@ -28,7 +26,7 @@ def checkUpOrDown(IP):
         if conn.status_code == 200:
             status = "OK"
         return status
-    except conn.error:
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
         status = "timeout"
         return status
 
@@ -39,7 +37,7 @@ def checkOS(IP):
     conn = requests.get(IP, timeout=1)
     server = conn.headers['server']
     if "Ubuntu" in server:
-        server = "Ubuntu Server"
+        server = "Ubuntu"
     if "Microsoft-IIS/8.0" in server:
         server = "Windows"
     return server
