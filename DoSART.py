@@ -12,6 +12,7 @@ import database
 import webbrowser
 import drawline
 import json
+import flasking
 
 
 class App:
@@ -256,7 +257,7 @@ class App:
         self.rpt_label6_ = Label(self.setup_grid0)
         self.rpt_label7_ = Label(self.setup_grid0)
 
-        self.rpt_button = Button(parent, text="Detailed Summary", command=self.pop)
+        self.rpt_button = Button(parent, text="Detailed Summary", command=flasking.starting)
 
         self.setup_grid0.grid(row=0, column=1, padx=200)
         self.rpt_label1.grid(row=0, column=1)
@@ -435,10 +436,10 @@ class App:
         elif self.progressvalue >= self.maxprogress and self.currentInterval <= self.interval:
             # HTTPDoS.setflag(False)
             self.progressvalue = 0
-            self.timeLimit = self.maxprogress
-            self.totaltime += self.maxprogress
             self.all_stats[self.currentInterval] = self.status_list
             self.all_img[self.currentInterval] = self.atk_draw.redraw()
+            self.timeLimit = self.maxprogress
+            self.totaltime += self.maxprogress
             self.currentInterval += 1
             self.status_list = []
             if self.currentInterval <= self.interval:

@@ -30,7 +30,7 @@ def getRecords():
     return c.fetchall()
 
 def getimage():
-    c.execute('SELECT l_img FROM Log WHERE l_id = 1')
+    c.execute('SELECT l_img FROM Log WHERE l_id = 3')
     return c.fetchone()
 
 def insertData(ip, os, port, method, atkduration, sensitivity, maxpacket, fixapplied, result, img):
