@@ -17,12 +17,12 @@ server = ""
 #         status = "timeout"
 #         return status
 
-def checkUpOrDown(IP):
+def checkUpOrDown(IP, TO=0.025):
     global status
     try:
         checkOS(IP)
         IP = "http://" + IP
-        conn = requests.get(IP, timeout=1)
+        conn = requests.get(IP, timeout=TO)
         if conn.status_code == 200:
             status = "OK"
         return status
@@ -55,10 +55,10 @@ def checkOS(IP):
 #     else:
 #         return "Launch FAILED"
 
-def main(ip="192.168.56.102"):
+def main(ip="192.168.56.102", TO=0.025):
     # define close_if_time_pass as a threading function, 5 as an argument
     # t = threading.Thread(target=close_if_time_pass,args=(2,))
     # start threading
     # t.start()
     # ask him his name
-    return checkUpOrDown(ip)
+    return checkUpOrDown(ip, TO)
