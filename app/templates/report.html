@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block body %}
+<ul class=entries>
+    <li><h2>TESTING ID :  {{ dataDicts['primaryID'] }} </h2>
+        <h4> DateTime: {{ dataDicts['DateTime'] }}</h4>
+        <h4> IP : {{ dataDicts['ipAddress'] }}</h4>
+        <h4> OS : {{ dataDicts['OperatingSystem'] }}</h4>
+        <h4> Port : {{ dataDicts['Port'] }}</h4>
+        <h4> Method : {{ dataDicts['Method'] }}</h4>
+        <h4> Duration : {{ dataDicts['AttackDuration'] }}</h4>
+        <h4> Max Packet Sent : {{ dataDicts['MaxPacketSent'] }}</h4>
+        <h4> Fix Applied : {{ dataDicts['FixApplied'] }}</h4>
+    <h2>Definition for {{ dataDicts['Method'] }}</h2>
+        <h3>{{ dataDicts['DoSDefinition'] }}</h3>
+    {% for data in dataDisplay %}
+    <li><h2>{{ data['num'] }}</h2>
+        <img src = "{{ url_for('static', filename=data['imgpath']) }}" >
+        <h3>{{ data['length'] }} REQUESTS SENT</h3>
+        <h4>{{ data['oncount']}} returns 'UP'</h4>
+        {% endfor %}
+        <li><h1>Total</h1>
+        <object type="image/svg+xml" data={{ url_for('static', filename=dataDicts['Pie']) }}>
+        Your browser does not support SVG</object>
+    <li><h2>Your Server is
+        </h2><h1 style="color: {{ dataDicts['Resultcolor'] }}">{{ dataDicts['Result'] }}</h1>
+    <h2>to {{ dataDicts['Method'] }}</h2>
+    <h1 style="color: #171563">{{ dataDicts['OperatingSystem'] }} Server SOLUTION for {{ dataDicts['Method'] }} Denial of Service Attack</h1>
+    {% for solution in solutions %}
+    <h2>Step {{ solution['number'] }}. </h2> <h3>{{ solution['entry'] }}</h3>
+    {% endfor %}
+</ul>
+
+{% endblock %}

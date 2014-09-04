@@ -3,6 +3,7 @@ __author__ = 'Liew'
 from Tkinter import *
 import uuid
 from PIL import Image, ImageDraw, ImageFont
+import os
 
 class App:
     def __init__(self, root):
@@ -58,9 +59,13 @@ class App:
         # self.canvas.bind('<Button-3>', lambda event, sec=self.linesecond: self.line2(event, sec))
 
 
-    def redraw(self):
-        filename = str(uuid.uuid4()) + ".jpg"
-        self.image.save("./static/" + filename)
+    def redraw(self, directory):
+        dirx = "./app/static/" + directory
+        if not os.path.exists(dirx):
+            os.mkdir(dirx)
+
+        filename = directory + "/" + str(uuid.uuid4()) + ".jpg"
+        self.image.save("./app/static/" + filename)
         self.draw = None
         self.image = None
         self.image = Image.new("RGB", (int(self.canvaswidth), self.canvasheight), self.white)

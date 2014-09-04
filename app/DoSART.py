@@ -3,16 +3,11 @@ __author__ = 'Liew Jun Tung'
 from Tkinter import *
 from ttk import *
 
-import HTTPDoS
-import time
 import tkFont
-import Check
-from threading import Thread
-import database
+import Check, flasking, piechart, drawline, database, HTTPDoS
 import webbrowser
-import drawline
 import json
-import flasking
+from time import gmtime, strftime
 
 
 class App:
@@ -32,6 +27,8 @@ class App:
         self.all_img = {}
         self.fix_applied = "NO"
         self.checksensitive = 0.5
+        self.urlflag = False
+        self.numbers = 0
 
         self.descFont = tkFont.Font(family='Helvetica',
                                     size=10)
@@ -45,8 +42,8 @@ class App:
         self.f4 = Frame(self.notebook, width=200, height=100)
 
         self.notebook.add(self.f1, text="1. Set Up")
-        self.notebook.add(self.f2, text="2. Attack", state="normal")
-        self.notebook.add(self.f3, text="3. Report", state="normal")
+        self.notebook.add(self.f2, text="2. Attack", state="disabled")
+        self.notebook.add(self.f3, text="3. Report", state="disabled")
         self.notebook.add(self.f4, text="4. Log")
 
         self.setup_mod(self.f1)
@@ -77,9 +74,9 @@ class App:
                       "\nis backup before \nproceeding."
         entry2_desc = "The Port of machine. \n Default is 80"
 
-        check1_desc = "Test Slowloris DoS \nattack <SAFE>"
-        check2_desc = "Test HULK DoS\nattack \n<EXTREMELY UNSAFE>\nMake sure your \nsystem is not " \
-                      "doing \nimportant functions"
+        check1_desc = "Test HTTP Slowdeath DoS \nattack <SAFE>"
+        # check2_desc = "Test HULK DoS\nattack \n<EXTREMELY UNSAFE>\nMake sure your \nsystem is not " \
+        #               "doing \nimportant functions"
         checkfix1_desc = "Did you apply\nfix provided by\nthis application?"
         checkfin_desc = "Confirm settings and ready to test the \ntarget system."
         combo_desc = "Determine the \namount of threads \nto send to the \ntarget machine."
@@ -100,9 +97,9 @@ class App:
         self.setup_button1 = Button(self.setup_grid1, text="Next", state="disabled", command=self.prep_http_attack)
         # self.setup_button1['command'] = launch_http_attack
         self.setup_check10 = Checkbutton(self.setup_grid0, command=self.check_dos)
-        self.setup_check11 = Checkbutton(self.setup_grid0)
-        self.setup_check20 = Checkbutton(self.setup_grid0, command=self.check_dos, state="disabled")
-        self.setup_check21 = Checkbutton(self.setup_grid0, state="disabled")
+        self.setup_check11 = Checkbutton(self.setup_grid0, command=self.check_fix)
+        # self.setup_check20 = Checkbutton(self.setup_grid0, command=self.check_dos, state="disabled")
+        # self.setup_check21 = Checkbutton(self.setup_grid0, state="disabled")
         self.setup_checkfin = Checkbutton(self.setup_grid0, text="ARE YOU READY", command=self.checkall)
         # self.setup_check1.invoke()
 
@@ -111,7 +108,7 @@ class App:
         self.setup_entry30 = Entry(self.setup_grid0, width=3)
         self.setup_combo31 = Combobox(self.setup_grid0, values=(400, 500, 600, 700), state="readonly")
         self.setup_combo31.set(500)
-        self.setup_entry40 = Entry(self.setup_grid0, width=3)
+        # self.setup_entry40 = Entry(self.setup_grid0, width=3)
         self.setup_entry4 = Entry(self.setup_grid0)
         self.setup_entry4.insert(0, "0.02")
         self.setup_entry1.bind("<FocusOut>", self.check_website)
@@ -125,20 +122,20 @@ class App:
         self.setup_label32 = Label(self.setup_grid0, text="Fix Applied", font=self.opFont)
         self.setup_label33 = Label(self.setup_grid0, text="Duration(sec)", font=self.opFont)
         self.setup_label34 = Label(self.setup_grid0, text="Amount of packets", font=self.opFont)
-        self.setup_label4 = Label(self.setup_grid0, text="Slowloris")
-        self.setup_label5 = Label(self.setup_grid0, text="HULK")
+        self.setup_label4 = Label(self.setup_grid0, text="HTTP Slowdeath")
+        # self.setup_label5 = Label(self.setup_grid0, text="HULK")
         self.setup_label6 = Label(self.setup_grid0, text="Timeout(sec)")
 
         self.setup_entry1.insert(0, "192.168.56.103")
         self.setup_entry30.insert(0, "20")
-        self.setup_entry40.insert(0, "20")
+        # self.setup_entry40.insert(0, "20")
 
         #bind action
         self.setup_entry1.bind('<Enter>', lambda event, desc=entry1_desc: self.test(event, desc))
         self.setup_entry2.bind('<Enter>', lambda event, desc=entry2_desc: self.test(event, desc))
         self.setup_check10.bind('<Enter>', lambda event, desc=check1_desc: self.test(event, desc))
         self.setup_check11.bind('<Enter>', lambda event, desc=checkfix1_desc: self.test(event, desc))
-        self.setup_check20.bind('<Enter>', lambda event, desc=check2_desc: self.test(event, desc))
+        # self.setup_check20.bind('<Enter>', lambda event, desc=check2_desc: self.test(event, desc))
         self.setup_entry4.bind('<Enter>', lambda event, desc=checkTimeout_desc: self.test(event, desc))
         self.setup_combo31.bind('<Enter>', lambda event, desc=combo_desc: self.test(event, desc))
         self.setup_checkfin.bind('<Enter>', lambda event, desc=checkfin_desc: self.test(event, desc))
@@ -154,25 +151,25 @@ class App:
         self.setup_entry1.grid(row=3, columnspan=4)
         self.setup_label2.grid(row=4, columnspan=4)
         self.setup_entry2.grid(row=5, columnspan=4)
-        self.setup_label30.grid(row=6, column=0)
-        self.setup_label31.grid(row=6, column=1)
-        self.setup_label32.grid(row=6, column=2)
-        self.setup_label33.grid(row=6, column=3)
-        self.setup_label34.grid(row=6, column=4)
-        self.setup_label6.grid(row=9)
 
-        self.setup_label4.grid(row=7, column=0)
-        self.setup_check10.grid(row=7, column=1)
-        self.setup_check11.grid(row=7, column=2)
-        self.setup_entry30.grid(row=7, column=3)
-        self.setup_combo31.grid(row=7, column=4)
+        self.setup_label6.grid(row=6, columnspan=4)
+        self.setup_entry4.grid(row=7, columnspan=4)
 
-        self.setup_label5.grid(row=8, column=0)
-        self.setup_check20.grid(row=8, column=1)
-        self.setup_check21.grid(row=8, column=2)
-        self.setup_entry40.grid(row=8, column=3)
+        self.setup_label30.grid(row=8, column=0)
+        self.setup_label31.grid(row=8, column=1)
+        self.setup_label32.grid(row=8, column=2)
+        self.setup_label33.grid(row=8, column=3)
+        self.setup_label34.grid(row=8, column=4)
+        self.setup_label4.grid(row=9, column=0)
+        self.setup_check10.grid(row=9, column=1)
+        self.setup_check11.grid(row=9, column=2)
+        self.setup_entry30.grid(row=9, column=3)
+        self.setup_combo31.grid(row=9, column=4)
 
-        self.setup_entry4.grid(row=9, column=1)
+        # self.setup_label5.grid(row=8, column=0)
+        # self.setup_check20.grid(row=8, column=1)
+        # self.setup_check21.grid(row=8, column=2)
+        # self.setup_entry40.grid(row=8, column=3)
 
         self.setup_checkfin.grid(row=10, columnspan=4)
 
@@ -240,90 +237,92 @@ class App:
 
     def report_mod(self, parent):
         self.setup_grid0 = Frame(parent)
-
+        self.rpt_label0 = Label(self.setup_grid0, text="Report No. ")
         self.rpt_label1 = Label(self.setup_grid0, text="IP Address: ")
         self.rpt_label2 = Label(self.setup_grid0, text="Operating System: ")
         self.rpt_label3 = Label(self.setup_grid0, text="Port: ")
         self.rpt_label4 = Label(self.setup_grid0, text="Attacking Method: ")
-        self.rpt_label5 = Label(self.setup_grid0, text="Time Elapsed: ")
-        self.rpt_label6 = Label(self.setup_grid0, text="Status: ")
-        self.rpt_label7 = Label(self.setup_grid0, text="Solution")
-
+        self.rpt_label5 = Label(self.setup_grid0, text="Time Elapsed(s): ")
+        # self.rpt_label6 = Label(self.setup_grid0, text="Status: ")
+        self.rpt_label0_ = Label(self.setup_grid0)
         self.rpt_label1_ = Label(self.setup_grid0)
         self.rpt_label2_ = Label(self.setup_grid0)
         self.rpt_label3_ = Label(self.setup_grid0)
         self.rpt_label4_ = Label(self.setup_grid0)
         self.rpt_label5_ = Label(self.setup_grid0)
-        self.rpt_label6_ = Label(self.setup_grid0)
-        self.rpt_label7_ = Label(self.setup_grid0)
+        # self.rpt_label6_ = Label(self.setup_grid0)
 
-        self.rpt_button = Button(parent, text="Detailed Summary", command=flasking.starting)
+        self.rpt_button = Button(parent, text="Detailed Summary", command=self.openURL)
 
         self.setup_grid0.grid(row=0, column=1, padx=200)
-        self.rpt_label1.grid(row=0, column=1)
-        self.rpt_label2.grid(row=1, column=1)
-        self.rpt_label3.grid(row=2, column=1)
-        self.rpt_label4.grid(row=3, column=1)
-        self.rpt_label5.grid(row=4, column=1)
-        self.rpt_label6.grid(row=5, column=1)
-        self.rpt_label7.grid(row=6, column=1)
+        self.rpt_label0.grid(row=0, column=1)
+        self.rpt_label1.grid(row=1, column=1)
+        self.rpt_label2.grid(row=2, column=1)
+        self.rpt_label3.grid(row=3, column=1)
+        self.rpt_label4.grid(row=4, column=1)
+        self.rpt_label5.grid(row=5, column=1)
+        # self.rpt_label6.grid(row=6, column=1)
 
-        self.rpt_label7_.bind('<Enter>', self.pop1)
-        self.rpt_label7_.bind('<Leave>', self.pop2)
-        self.rpt_label7_.bind('<Button-1>', self.openURL)
-
-        self.rpt_label1_.grid(row=0, column=2)
-        self.rpt_label2_.grid(row=1, column=2)
-        self.rpt_label3_.grid(row=2, column=2)
-        self.rpt_label4_.grid(row=3, column=2)
-        self.rpt_label5_.grid(row=4, column=2)
-        self.rpt_label6_.grid(row=5, column=2)
-        self.rpt_label7_.grid(row=6, column=2)
+        self.rpt_label0_.grid(row=0, column=2)
+        self.rpt_label1_.grid(row=1, column=2)
+        self.rpt_label2_.grid(row=2, column=2)
+        self.rpt_label3_.grid(row=3, column=2)
+        self.rpt_label4_.grid(row=4, column=2)
+        self.rpt_label5_.grid(row=5, column=2)
+        # self.rpt_label6_.grid(row=5, column=2)
 
         self.rpt_button.grid(row=7, column=1, columnspan=2)
 
     def log_mod(self, parent):
         self.log_button = Button(parent, text="Load", command=self.loadRecords)
-        self.tree = Treeview(parent, columns=('IP', 'OS', 'Port', 'Atk', 'Duration', 'MP', 'Solution', 'TimeStamp'))
+        self.tree = Treeview(parent, columns=('No.', 'IP', 'OS', 'Port', 'Atk',
+                                              'Duration', 'Sensitive', 'MP', 'F', 'TimeStamp'))
+        self.tree['show'] = 'headings'
 
         self.tree.column('#0', width=50)
-        self.tree.column('#1', width=100)
-        self.tree.column('#2', width=80)
-        self.tree.column('#3', width=50)
-        self.tree.column('#4', width=100)
-        self.tree.column('#5', width=60)
-        self.tree.column('#6', width=80)
+        self.tree.column('#1', width=50)
+        self.tree.column('#2', width=100)
+        self.tree.column('#3', width=80)
+        self.tree.column('#4', width=50)
+        self.tree.column('#5', width=100)
+        self.tree.column('#6', width=60)
         self.tree.column('#7', width=80)
         self.tree.column('#8', width=80)
-        self.tree.heading('#0', text="No.")
-        self.tree.heading('#1', text="IP")
-        self.tree.heading('#2', text="OS")
-        self.tree.heading('#3', text="Port")
-        self.tree.heading('#4', text="Attack Method")
-        self.tree.heading('#5', text="Duration")
-        self.tree.heading('#6', text="Max Packets Sent")
-        self.tree.heading('#7', text="Fix Applied")
-        self.tree.heading('#8', text="TimeStamp")
+        self.tree.column('#9', width=80)
+        self.tree.column('#10', width=80)
+        self.tree.heading('#0', text="Report No.")
+        self.tree.heading('#1', text="No.")
+        self.tree.heading('#2', text="IP")
+        self.tree.heading('#3', text="OS")
+        self.tree.heading('#4', text="Port")
+        self.tree.heading('#5', text="Attack Method")
+        self.tree.heading('#6', text="Duration(s)")
+        self.tree.heading('#7', text="Sensitivity")
+        self.tree.heading('#8', text="Max Packet")
+        self.tree.heading('#9', text="Fix")
+        self.tree.heading('#10', text="TimeStamp")
 
         self.tree.grid(row=1, column=1, columnspan=2)
         self.log_button.grid(row=2, column=2, sticky=(E, S))
 
         for records in database.getRecords():
             self.tree.insert('', 'end', text=records[0],
-                             values=(records[1], records[2], records[3], records[4], records[5],
-                                     records[6], records[7], records[11]))
+                             values=(records[0], records[1], records[2], records[3], records[4], records[5],
+                                     records[6], records[7], records[8], records[13]))
             self.numbers = records[0]
 
     def loadRecords(self):
         record = self.tree.set(self.tree.get_children()[self.tree.index(self.tree.focus())])
-        print record
+        dbRec = database.getOneRecord(record['No.'])
+        flasking.setvalues(dbRec[0], dbRec[1], dbRec[2], dbRec[3], dbRec[4],
+                           dbRec[5], dbRec[6], dbRec[7], dbRec[8], dbRec[11], dbRec[12], dbRec[13])
+        # print record
+        self.rpt_label0_['text'] = record['No.']
         self.rpt_label1_['text'] = record['IP']
         self.rpt_label2_['text'] = record['OS']
         self.rpt_label3_['text'] = record['Port']
         self.rpt_label4_['text'] = record['Atk']
         self.rpt_label5_['text'] = record['Duration']
-        self.rpt_label6_['text'] = record['Status']
-        self.rpt_label7_['text'] = "CLICK HERE"
         self.operatingSystem = record['OS']
         self.notebook.tab(2, state='normal')
         self.notebook.select(2)
@@ -342,8 +341,8 @@ class App:
         self.atk_flag = True
         if any('selected' in x for x in self.setup_check10.state()):
             self.prep_http_attack()
-        if any('selected' in x for x in self.setup_check20.state()):
-            self.prep_hulk_attack()
+        # if any('selected' in x for x in self.setup_check20.state()):
+        #     self.prep_hulk_attack()
 
     def prep_http_attack(self):
         if self.validIP(self.setup_entry1.get()):
@@ -369,31 +368,18 @@ class App:
             self.timeLimit = self.maxprogress
             self.check_status(self.setup_entry1.get())
             self.set_config()
-            # self.t1 = Thread(target=self.launch_http_attack, args=(self.maxthread,self.currentInterval))
-            # t2 = Thread(target=self.launch_dos)
-            # self.t1.start()
-            # t2.start()
             self.launch_http_attack(self.max_packet, self.currentInterval)
             self.launch_dos()
 
         else:
-            print "Invalid IP address"
-
-
-    # def launch_http_attack(self, thread):
-    #     self.maxprogress = self.duration
-    #     for i in range(1, self.interval+1):
-    #         HTTPDoS.setTarget(thread*i/self.interval, self.ip_address, self.maxprogress, self.port)
-    #         self.atk_console.insert(INSERT, HTTPDoS.getstatus()[0])
-    #         self.atk_console.see(END)
-    #         time.sleep(self.maxprogress)
+            return "Invalid IP address"
 
     def launch_http_attack(self, thread, i):
-    #     self.maxprogress = self.duration
-    #     for i in range(1, self.interval+1):
-             HTTPDoS.setTarget(thread*i/self.interval, self.ip_address, self.maxprogress, self.port)
-             self.atk_console.insert(INSERT, HTTPDoS.getstatus()[0])
-             self.atk_console.see(END)
+        self.atk_label6_['text'] = "Opening %s HTTP connections to DoS the target server" % (thread*i/self.interval)
+        HTTPDoS.setTarget(thread*i/self.interval, self.ip_address, self.maxprogress, self.port)
+        self.atk_console.insert(INSERT, HTTPDoS.getstatus()[0])
+        self.atk_console.see(END)
+
 
     def prep_hulk_attack(self):
         pass
@@ -417,13 +403,14 @@ class App:
         self.atk_label1_["text"] = self.setup_entry1.get()
         self.atk_label2_["text"] = self.operatingSystem
         self.atk_label3_["text"] = self.setup_entry2.get()
-        self.atk_label4_["text"] = "HTTP DOS #%d" %self.currentInterval
+        self.atk_label4_["text"] = self.attack
         self.atk_label5_["text"] = self.timeLimit
+        self.rpt_label0_['text'] = str(self.numbers)
         self.rpt_label1_["text"] = self.setup_entry1.get()
         self.rpt_label2_["text"] = self.operatingSystem
         self.rpt_label3_["text"] = self.setup_entry2.get()
-        self.rpt_label4_["text"] = "something"
-        self.rpt_label5_["text"] = str(self.timeLimit) + "seconds(s)"
+        self.rpt_label4_["text"] = self.attack
+        self.rpt_label5_["text"] = str(self.currentInterval) + "seconds(s)"
 
         if self.progressvalue < self.maxprogress and self.currentInterval <= self.interval:
             self.notebook.tab(0, state="disabled")
@@ -431,13 +418,13 @@ class App:
             self.notebook.tab(3, state="disabled")
             self.status_list.append(self.check_status(self.setup_entry1.get()))
 
-            root.after(1000, self.launch_dos)
+            self.frame.after(1000, self.launch_dos)
 
         elif self.progressvalue >= self.maxprogress and self.currentInterval <= self.interval:
             # HTTPDoS.setflag(False)
             self.progressvalue = 0
             self.all_stats[self.currentInterval] = self.status_list
-            self.all_img[self.currentInterval] = self.atk_draw.redraw()
+            self.all_img[self.currentInterval] = self.atk_draw.redraw(str(self.numbers+1))
             self.timeLimit = self.maxprogress
             self.totaltime += self.maxprogress
             self.currentInterval += 1
@@ -448,7 +435,7 @@ class App:
                 self.notebook.tab(2, state="disabled")
                 self.notebook.tab(3, state="disabled")
                 self.check_status(self.setup_entry1.get())
-            root.after(1000, self.launch_dos)
+            self.frame.after(1000, self.launch_dos)
 
         else:
             self.notebook.tab(2)
@@ -456,14 +443,17 @@ class App:
             self.notebook.tab(2, state="normal")
             self.notebook.tab(3, state="normal")
             self.notebook.tab(1, state="disabled")
-            print self.all_stats
-            print self.all_img
+            # print self.all_stats
+            # print self.all_img
 
             self.atk_flag = False
             self.report()
             self.notebook.select(2)
 
     def report(self):
+        pie = piechart.create_pie(self.all_stats, str(self.numbers+1), self.fix_applied)
+        now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        filename = str(self.numbers+1) + "/console_log.text"
         database.insertData(self.setup_entry1.get(),
                             self.operatingSystem,
                             self.setup_entry2.get(),
@@ -473,33 +463,69 @@ class App:
                             self.max_packet,
                             self.fix_applied,
                             json.dumps(self.all_stats),
-                            json.dumps(self.all_img))
-        self.tree.insert('', 'end', text=str(self.numbers + 1), values=(
-        self.setup_entry1.get(), self.operatingSystem, self.setup_entry2.get(), self.setup_choice1.get(),
-        self.setup_entry3.get(), self.status))
-        self.rpt_label1_["text"] = self.setup_entry1.get()
-        self.rpt_label2_["text"] = self.setup_entry2.get()
-        self.rpt_label3_["text"] = self.setup_choice1.get()
-        self.rpt_label4_["text"] = self.maxprogress
+                            json.dumps(self.all_img),
+                            pie,
+                            filename)
+        flasking.setvalues(self.numbers + 1,
+                           self.setup_entry1.get(),
+                           self.operatingSystem,
+                           self.setup_entry2.get(),
+                           self.attack,
+                           self.totaltime,
+                           self.checksensitive,
+                           self.max_packet,
+                           self.fix_applied,
+                           pie,
+                           filename,
+                           now)
+        file = open("./app/static/"+filename, "w")
+        file.write(self.atk_console.get("1.0", 'end'))
+        file.close()
+        self.tree.insert('', 'end',
+                         text=str(self.numbers + 1),
+                         values=(str(self.numbers + 1),
+                                 self.setup_entry1.get(),
+                                 self.operatingSystem,
+                                 self.setup_entry2.get(),
+                                 self.attack,
+                                 self.totaltime,
+                                 self.checksensitive,
+                                 self.max_packet,
+                                 self.fix_applied,
+                                 now))
 
-        self.rpt_label7_["text"] = database.findSolution(self.operatingSystem)
+        self.rpt_label1_["text"] = self.setup_entry1.get()
+        self.rpt_label2_["text"] = self.operatingSystem
+        self.rpt_label3_["text"] = self.setup_entry2.get()
+        self.rpt_label4_["text"] = self.attack
+        self.rpt_label5_["text"] = str(self.totaltime)
+
+    def clear_all(self):
+        self.setup_entry1.delete(0, END)
+        self.atk_label1_['text'] = ""
+        self.atk_label2_['text'] = ""
+        self.atk_label3_['text'] = ""
+        self.atk_label4_['text'] = ""
+        self.atk_label5_['text'] = ""
+        self.atk_label6_['text'] = ""
+        self.atk_console.delete('1.0', 'end')
 
 
     def check_status(self, iPaddress, ):
         #
         if Check.main(iPaddress) != "OK":
             status = "OFF"
-            self.atk_label6_.config(foreground="RED")
-            self.rpt_label6_.config(foreground="RED")
+            # self.atk_label6_.config(foreground="RED")
+            # self.rpt_label6_.config(foreground="RED")
             self.status = "Website down"
-            self.atk_label6_["text"] = self.status
+            # self.atk_label6_["text"] = self.status
             self.atk_draw.tik(status)
         else:
             status = "ON"
-            self.atk_label6_.config(foreground="GREEN")
-            self.rpt_label6_.config(foreground="GREEN")
+            # self.atk_label6_.config(foreground="GREEN")
+            # self.rpt_label6_.config(foreground="GREEN")
             self.status = "Website up"
-            self.atk_label6_["text"] = self.status
+            # self.atk_label6_["text"] = self.status
             self.atk_draw.tik(status)
         self.atk_console.insert(END, self.status + '\n')
         self.atk_console.see(END)
@@ -549,13 +575,13 @@ class App:
             self.setup_button1.configure(state="disabled")
 
     def check_dos(self):
-        if any('selected' in x for x in self.setup_check10.state()) and \
-                any('selected' in x for x in self.setup_check20.state()):
+        # if any('selected' in x for x in self.setup_check10.state()) and \
+        #         any('selected' in x for x in self.setup_check20.state()):
+        #     self.checkflag2 = 1
+        #     self.attack = "Slowloris and HULK"
+        if any('selected' in x for x in self.setup_check10.state()):
             self.checkflag2 = 1
-            self.attack = "Slowloris and HULK"
-        elif any('selected' in x for x in self.setup_check10.state()):
-            self.checkflag2 = 1
-            self.attack = "Slowloris"
+            self.attack = "Slowdeath"
         elif any('selected' in x for x in self.setup_check10.state()):
             self.checkflag2 = 1
             self.attack = "HULK"
@@ -563,21 +589,37 @@ class App:
             self.checkflag2 = 0
         self.checkall()
 
+    def check_fix(self):
+        if any('selected' in x for x in self.setup_check10.state()):
+            self.fix_applied = "YES"
+        else:
+            self.fix_applied = "NO"
+
     def pop(self):
         self.notebook.tab(0, state="normal")
         self.notebook.tab(2, state="normal")
         self.notebook.tab(1, state="disabled")
         self.progressvalue = self.maxprogress
 
-    def pop1(self, event):
-        self.rpt_label7_.config(foreground="BLUE")
+    def setURLflag(self, event):
+        if self.urlflag:
+            t4 = webbrowser.open("127.0.0.1", new=2)
+            t4.start()
+            flasking.starting()
+            self.urlflag = False
+        else:
+            self.urlflag = True
 
-    def pop2(self, event):
-        self.rpt_label7_.config(foreground="BLACK")
 
-    def openURL(self, event):
-        new = 2
-        webbrowser.open(database.findSolution(self.operatingSystem), new=new)
+    def openURL(self):
+        if not self.urlflag:
+            self.urlflag = True
+            webbrowser.open("http://127.0.0.1:5000", new=2)
+            flasking.starting()
+        else:
+            self.urlflag = False
+            # self.server.terminate()
+
 
     def test(self, event, desc):
         self.setup_help.config(state=NORMAL)
@@ -585,7 +627,8 @@ class App:
         self.setup_help.insert('1.0', desc)
         self.setup_help.config(state=DISABLED)
 
-root = Tk()
-root.wm_title("Denial Of Service Attack and Reporting Tool")
-app = App(root)
-root.mainloop()
+def run():
+    root = Tk()
+    root.wm_title("Denial Of Service Attack and Reporting Tool")
+    apps = App(root)
+    root.mainloop()

