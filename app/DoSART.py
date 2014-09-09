@@ -28,7 +28,7 @@ class App:
         self.fix_applied = "NO"
         self.checksensitive = 0.5
         self.urlflag = False
-        self.numbers = 0
+        self.rpt_id = 0
 
         self.descFont = tkFont.Font(family='Helvetica',
                                     size=10)
@@ -65,7 +65,7 @@ class App:
         self.setup_grid0 = Frame(parent)
         self.setup_grid1 = Frame(parent)
 
-        master_desc = "Welcome to Denial of Service Attack and Reporting Tool(DoSaRT).\n1. This program is to help you " \
+        master_desc = "Welcome to Denial of Service Launcher with  Reporting and Suggestion Tool.\n1. This program is to help you " \
                       "understand the durability of your web server \n    against various HTTP Denial of Services." \
                       "\n2. Please remember that this tool have the potential to cause loss of data. " \
                       "\n3. Do ensure your test system is not currently under official usage."
@@ -73,14 +73,16 @@ class App:
         entry1_desc = "The IP address of \nthe test machine.\nMake sure the data \nof this web server" \
                       "\nis backup before \nproceeding."
         entry2_desc = "The Port of machine. \n Default is 80"
+        dur_desc = "Duration of test \nfor every incrementation."
 
         check1_desc = "Test HTTP Slowdeath DoS \nattack <SAFE>"
-        # check2_desc = "Test HULK DoS\nattack \n<EXTREMELY UNSAFE>\nMake sure your \nsystem is not " \
-        #               "doing \nimportant functions"
+
         checkfix1_desc = "Did you apply\nfix provided by\nthis application?"
         checkfin_desc = "Confirm settings and ready to test the \ntarget system."
-        combo_desc = "Determine the \namount of threads \nto send to the \ntarget machine."
-        checkTimeout_desc = "Determine the \nthe sensitivity and \naccuracy of this \napplication ability \nto gauge the \nstatus" \
+        combo_desc = "Determine the \namount of connections \nor packets to send to\nthe target machine.\n" \
+                     "500 means the test will\nrun from 100 to 500\nThe test will run 5 \ntimes with an increment " \
+                     "\nof 100.\n400 = 4 intervals\n500 = 5 intervals\n600 = 6 intervals\n700 = 7 intervals "
+        checkTimeout_desc = "Determine the \nthe sensitivity and \naccuracy of this \napplication \nto gauge the \nstatus " \
                             "of the \nwebsite."
 
         self.setup_description = Label(self.setup_grid1, text="Description")
@@ -95,22 +97,17 @@ class App:
                                relief=GROOVE)
 
         self.setup_button1 = Button(self.setup_grid1, text="Next", state="disabled", command=self.prep_http_attack)
-        # self.setup_button1['command'] = launch_http_attack
         self.setup_check10 = Checkbutton(self.setup_grid0, command=self.check_dos)
         self.setup_check11 = Checkbutton(self.setup_grid0, command=self.check_fix)
-        # self.setup_check20 = Checkbutton(self.setup_grid0, command=self.check_dos, state="disabled")
-        # self.setup_check21 = Checkbutton(self.setup_grid0, state="disabled")
         self.setup_checkfin = Checkbutton(self.setup_grid0, text="ARE YOU READY", command=self.checkall)
-        # self.setup_check1.invoke()
 
         self.setup_entry1 = Entry(self.setup_grid0)
         self.setup_entry2 = Entry(self.setup_grid0)
         self.setup_entry30 = Entry(self.setup_grid0, width=3)
         self.setup_combo31 = Combobox(self.setup_grid0, values=(400, 500, 600, 700), state="readonly")
         self.setup_combo31.set(500)
-        # self.setup_entry40 = Entry(self.setup_grid0, width=3)
-        self.setup_entry4 = Entry(self.setup_grid0)
-        self.setup_entry4.insert(0, "0.02")
+        self.setup_scale = Scale(self.setup_grid0, from_=0.1, to=0.02)
+        self.setup_scale.set(0.03)
         self.setup_entry1.bind("<FocusOut>", self.check_website)
 
         self.setup_label1 = Label(self.setup_grid0, text="Target Server IP Address")
@@ -123,24 +120,25 @@ class App:
         self.setup_label33 = Label(self.setup_grid0, text="Duration(sec)", font=self.opFont)
         self.setup_label34 = Label(self.setup_grid0, text="Amount of packets", font=self.opFont)
         self.setup_label4 = Label(self.setup_grid0, text="HTTP Slowdeath")
-        # self.setup_label5 = Label(self.setup_grid0, text="HULK")
-        self.setup_label6 = Label(self.setup_grid0, text="Timeout(sec)")
+        self.setup_label6 = Label(self.setup_grid0, text="Sensitivity")
+        self.setup_labelto1 = Label(self.setup_grid0, text="Sensitive")
+        self.setup_labelto2 = Label(self.setup_grid0, text="Less Sensitive")
 
-        self.setup_entry1.insert(0, "192.168.56.103")
+        self.setup_entry1.insert(0, "")
         self.setup_entry30.insert(0, "20")
-        # self.setup_entry40.insert(0, "20")
 
-        #bind action
         self.setup_entry1.bind('<Enter>', lambda event, desc=entry1_desc: self.test(event, desc))
         self.setup_entry2.bind('<Enter>', lambda event, desc=entry2_desc: self.test(event, desc))
         self.setup_check10.bind('<Enter>', lambda event, desc=check1_desc: self.test(event, desc))
         self.setup_check11.bind('<Enter>', lambda event, desc=checkfix1_desc: self.test(event, desc))
-        # self.setup_check20.bind('<Enter>', lambda event, desc=check2_desc: self.test(event, desc))
-        self.setup_entry4.bind('<Enter>', lambda event, desc=checkTimeout_desc: self.test(event, desc))
+
+        self.setup_scale.bind('<Enter>', lambda event, desc=checkTimeout_desc: self.test(event, desc))
+
+        self.setup_entry30.bind('<Enter>', lambda event, desc=dur_desc: self.test(event, desc))
+
         self.setup_combo31.bind('<Enter>', lambda event, desc=combo_desc: self.test(event, desc))
         self.setup_checkfin.bind('<Enter>', lambda event, desc=checkfin_desc: self.test(event, desc))
 
-        #Frame Grid
         self.setup_grid0.grid(row=0, column=0)
         self.setup_grid1.grid(row=0, column=1)
 
@@ -153,7 +151,9 @@ class App:
         self.setup_entry2.grid(row=5, columnspan=4)
 
         self.setup_label6.grid(row=6, columnspan=4)
-        self.setup_entry4.grid(row=7, columnspan=4)
+        self.setup_labelto2.grid(row=7)
+        self.setup_scale.grid(row=7, column=1, columnspan=2)
+        self.setup_labelto1.grid(row=7, column=3)
 
         self.setup_label30.grid(row=8, column=0)
         self.setup_label31.grid(row=8, column=1)
@@ -165,28 +165,13 @@ class App:
         self.setup_check11.grid(row=9, column=2)
         self.setup_entry30.grid(row=9, column=3)
         self.setup_combo31.grid(row=9, column=4)
-
-        # self.setup_label5.grid(row=8, column=0)
-        # self.setup_check20.grid(row=8, column=1)
-        # self.setup_check21.grid(row=8, column=2)
-        # self.setup_entry40.grid(row=8, column=3)
-
         self.setup_checkfin.grid(row=10, columnspan=4)
-
-
-        #self.setup_entry3.grid(row=10)
-        #self.setup_label4.grid(row=11)
-
-        # self.setup_check1.grid(row=13)
-        # self.setup_check2.grid(row=14)
 
         self.setup_description.grid(row=0)
         self.setup_help.grid(row=1, sticky=(N))
         self.setup_button1.grid(row=2)
 
         self.setup_label1_.grid_remove()
-        # parent.columnconfigure(0, weight=1)
-        # parent.rowconfigure(0, weight=1)
 
     def attacking_mod(self, parent):
         self.atk_grid0 = Frame(parent)
@@ -194,7 +179,7 @@ class App:
 
         self.atk_label1 = Label(self.atk_grid0, text="IP Address: ")
         self.atk_label2 = Label(self.atk_grid0, text="Operating System: ")
-        self.atk_label3 = Label(self.atk_grid0, text="Server: ")
+        self.atk_label3 = Label(self.atk_grid0, text="Port: ")
         self.atk_label4 = Label(self.atk_grid0, text="Attacking Method: ")
         self.atk_label5 = Label(self.atk_grid0, text="Time Elapsing: ")
         self.atk_label6 = Label(self.atk_grid0, text="Status: ")
@@ -213,8 +198,6 @@ class App:
                                 borderwidth=3, relief=GROOVE)
 
         self.atk_draw = drawline.App(self.atk_grid1)
-        # self.atk_status = Canvas(self.atk_grid1, width=270, height=160, bg='white')
-
         self.atk_grid0.grid(row=1)
         self.atk_label1.grid(row=0)
         self.atk_label2.grid(row=1)
@@ -261,7 +244,6 @@ class App:
         self.rpt_label3.grid(row=3, column=1)
         self.rpt_label4.grid(row=4, column=1)
         self.rpt_label5.grid(row=5, column=1)
-        # self.rpt_label6.grid(row=6, column=1)
 
         self.rpt_label0_.grid(row=0, column=2)
         self.rpt_label1_.grid(row=1, column=2)
@@ -269,7 +251,6 @@ class App:
         self.rpt_label3_.grid(row=3, column=2)
         self.rpt_label4_.grid(row=4, column=2)
         self.rpt_label5_.grid(row=5, column=2)
-        # self.rpt_label6_.grid(row=5, column=2)
 
         self.rpt_button.grid(row=7, column=1, columnspan=2)
 
@@ -309,7 +290,7 @@ class App:
             self.tree.insert('', 'end', text=records[0],
                              values=(records[0], records[1], records[2], records[3], records[4], records[5],
                                      records[6], records[7], records[8], records[13]))
-            self.numbers = records[0]
+            self.rpt_id = records[0]
 
     def loadRecords(self):
         record = self.tree.set(self.tree.get_children()[self.tree.index(self.tree.focus())])
@@ -341,12 +322,11 @@ class App:
         self.atk_flag = True
         if any('selected' in x for x in self.setup_check10.state()):
             self.prep_http_attack()
-        # if any('selected' in x for x in self.setup_check20.state()):
-        #     self.prep_hulk_attack()
+
 
     def prep_http_attack(self):
         if self.validIP(self.setup_entry1.get()):
-            self.checksensitive = float(self.setup_entry4.get())
+            self.checksensitive = float(self.setup_scale.get())
             self.totaltime = 0
             self.progressvalue = 0
             self.currentInterval = 1
@@ -362,7 +342,7 @@ class App:
             self.max_packet = int(self.setup_combo31.get())
 
             self.atk_progress["value"] = 0
-            self.duration = int(self.setup_entry30.get())
+            self.duration = int(self.setup_entry30.get())+1
             self.atk_progress["maximum"] = self.duration
             self.maxprogress = self.duration
             self.timeLimit = self.maxprogress
@@ -379,13 +359,6 @@ class App:
         HTTPDoS.setTarget(thread*i/self.interval, self.ip_address, self.maxprogress, self.port)
         self.atk_console.insert(INSERT, HTTPDoS.getstatus()[0])
         self.atk_console.see(END)
-
-
-    def prep_hulk_attack(self):
-        pass
-
-    def launch_hulk(self):
-        pass
 
     def set_config(self):
         self.interval = self.max_packet / 100
@@ -405,7 +378,7 @@ class App:
         self.atk_label3_["text"] = self.setup_entry2.get()
         self.atk_label4_["text"] = self.attack
         self.atk_label5_["text"] = self.timeLimit
-        self.rpt_label0_['text'] = str(self.numbers)
+        self.rpt_label0_['text'] = str(self.rpt_id)
         self.rpt_label1_["text"] = self.setup_entry1.get()
         self.rpt_label2_["text"] = self.operatingSystem
         self.rpt_label3_["text"] = self.setup_entry2.get()
@@ -421,10 +394,9 @@ class App:
             self.frame.after(1000, self.launch_dos)
 
         elif self.progressvalue >= self.maxprogress and self.currentInterval <= self.interval:
-            # HTTPDoS.setflag(False)
             self.progressvalue = 0
             self.all_stats[self.currentInterval] = self.status_list
-            self.all_img[self.currentInterval] = self.atk_draw.redraw(str(self.numbers+1))
+            self.all_img[self.currentInterval] = self.atk_draw.redraw(str(self.rpt_id+1))
             self.timeLimit = self.maxprogress
             self.totaltime += self.maxprogress
             self.currentInterval += 1
@@ -443,17 +415,15 @@ class App:
             self.notebook.tab(2, state="normal")
             self.notebook.tab(3, state="normal")
             self.notebook.tab(1, state="disabled")
-            # print self.all_stats
-            # print self.all_img
 
             self.atk_flag = False
             self.report()
             self.notebook.select(2)
 
     def report(self):
-        pie = piechart.create_pie(self.all_stats, str(self.numbers+1), self.fix_applied)
+        pie = piechart.create_pie(self.all_stats, str(self.rpt_id+1))
         now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        filename = str(self.numbers+1) + "/console_log.text"
+        filename = str(self.rpt_id+1) + "/console_log.text"
         database.insertData(self.setup_entry1.get(),
                             self.operatingSystem,
                             self.setup_entry2.get(),
@@ -466,7 +436,7 @@ class App:
                             json.dumps(self.all_img),
                             pie,
                             filename)
-        flasking.setvalues(self.numbers + 1,
+        flasking.setvalues(self.rpt_id + 1,
                            self.setup_entry1.get(),
                            self.operatingSystem,
                            self.setup_entry2.get(),
@@ -482,8 +452,8 @@ class App:
         file.write(self.atk_console.get("1.0", 'end'))
         file.close()
         self.tree.insert('', 'end',
-                         text=str(self.numbers + 1),
-                         values=(str(self.numbers + 1),
+                         text=str(self.rpt_id + 1),
+                         values=(str(self.rpt_id + 1),
                                  self.setup_entry1.get(),
                                  self.operatingSystem,
                                  self.setup_entry2.get(),
@@ -511,27 +481,31 @@ class App:
         self.atk_console.delete('1.0', 'end')
 
 
-    def check_status(self, iPaddress, ):
-        #
-        if Check.main(iPaddress) != "OK":
-            status = "OFF"
-            # self.atk_label6_.config(foreground="RED")
-            # self.rpt_label6_.config(foreground="RED")
-            self.status = "Website down"
-            # self.atk_label6_["text"] = self.status
-            self.atk_draw.tik(status)
-        else:
-            status = "ON"
-            # self.atk_label6_.config(foreground="GREEN")
-            # self.rpt_label6_.config(foreground="GREEN")
-            self.status = "Website up"
-            # self.atk_label6_["text"] = self.status
-            self.atk_draw.tik(status)
+    def check_status(self, iPaddress):
+        status = ""
+        if self.fix_applied == "NO":
+            if Check.main(iPaddress, self.checksensitive) != "OK":
+                status = "OFF"
+                self.status = "Website down"
+                self.atk_draw.tik(status)
+            else:
+                status = "ON"
+                self.status = "Website up"
+                self.atk_draw.tik(status)
+        if self.fix_applied == "YES":
+            if Check.main(iPaddress, self.checksensitive) != "OK":
+                status = "ON"
+                self.status = "Website up"
+                self.atk_draw.tik(status)
+            else:
+                status = "OFF"
+                self.status = "Website down"
+                self.atk_draw.tik(status)
+
         self.atk_console.insert(END, self.status + '\n')
         self.atk_console.see(END)
         return status
-        # if self.atk_flag:
-        #     self.atk_grid1.after(1000, self.check_status, iPaddress)
+
 
     def check_website(self, event):
         iPaddress = self.setup_entry1.get()
@@ -575,16 +549,9 @@ class App:
             self.setup_button1.configure(state="disabled")
 
     def check_dos(self):
-        # if any('selected' in x for x in self.setup_check10.state()) and \
-        #         any('selected' in x for x in self.setup_check20.state()):
-        #     self.checkflag2 = 1
-        #     self.attack = "Slowloris and HULK"
         if any('selected' in x for x in self.setup_check10.state()):
             self.checkflag2 = 1
             self.attack = "Slowdeath"
-        elif any('selected' in x for x in self.setup_check10.state()):
-            self.checkflag2 = 1
-            self.attack = "HULK"
         else:
             self.checkflag2 = 0
         self.checkall()
@@ -627,8 +594,10 @@ class App:
         self.setup_help.insert('1.0', desc)
         self.setup_help.config(state=DISABLED)
 
+
+
 def run():
     root = Tk()
-    root.wm_title("Denial Of Service Attack and Reporting Tool")
+    root.wm_title("Denial Of Service Launcher with Reporting and Suggestion Tool")
     apps = App(root)
     root.mainloop()

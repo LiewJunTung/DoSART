@@ -17,6 +17,7 @@
         <img src = "{{ url_for('static', filename=data['imgpath']) }}" >
         <h3>{{ data['length'] }} REQUESTS SENT</h3>
         <h4>{{ data['oncount']}} returns 'UP'</h4>
+        <h4>Comment: {{ data['score_comment'] }}</h4>
         {% endfor %}
         <li><h1>Total</h1>
         <object type="image/svg+xml" data={{ url_for('static', filename=dataDicts['Pie']) }}>
@@ -28,6 +29,10 @@
     {% for solution in solutions %}
     <h2>Step {{ solution['number'] }}. </h2> <h3>{{ solution['entry'] }}</h3>
     {% endfor %}
+    <form action="{{ url_for('shutdown')}}" method="post" style="justify-content: center">
+        <input type="submit" value="Shutdown Server" style="color: red; font: Arial; font-size: 20px; justify-content: center;">
+    </form>
 </ul>
 
 {% endblock %}
+

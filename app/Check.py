@@ -3,19 +3,7 @@ __author__ = 'Liew'
 import requests
 
 status = ""
-server = ""
-
-# def checkUpOrDown(IP):
-#     global status
-#     try:
-#         conn = httplib.HTTPConnection(IP, timeout=1)
-#         conn.request("HEAD", "/")
-#         r1 = conn.getresponse()
-#         status = r1.reason
-#         return status
-#     except socket.error:
-#         status = "timeout"
-#         return status
+server_os = ""
 
 def checkUpOrDown(IP, TO=0.025):
     global status
@@ -31,34 +19,17 @@ def checkUpOrDown(IP, TO=0.025):
         return status
 
 def checkOS(IP):
-    global server
+    global server_os
 
     IP = "http://" + IP
     conn = requests.get(IP, timeout=1)
-    server = conn.headers['server']
-    if "Ubuntu" in server:
-        server = "Ubuntu"
-    if "Microsoft-IIS/8.0" in server:
-        server = "Windows"
-    return server
+    server_os = conn.headers['server']
+    if "Ubuntu" in server_os:
+        server_os = "Ubuntu"
+    if "Microsoft-IIS/8.0" in server_os:
+        server_os = "Windows"
+    return server_os
 
-
-
-# def close_if_time_pass(seconds):
-#     global status
-#     """
-#     Threading function, after N seconds print something and exit program
-#     """
-#     time.sleep(seconds)
-#     if status == "":
-#         return "OK"
-#     else:
-#         return "Launch FAILED"
 
 def main(ip="192.168.56.102", TO=0.025):
-    # define close_if_time_pass as a threading function, 5 as an argument
-    # t = threading.Thread(target=close_if_time_pass,args=(2,))
-    # start threading
-    # t.start()
-    # ask him his name
     return checkUpOrDown(ip, TO)

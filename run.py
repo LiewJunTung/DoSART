@@ -2,4 +2,5 @@ from app import DoSART
 
 __author__ = 'Liew'
 
-DoSART.run()
+if __name__ == "__main__":
+    DoSART.run()

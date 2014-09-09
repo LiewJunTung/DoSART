@@ -43,6 +43,49 @@ def getScore(pid):
                 for row in collections.OrderedDict(sorted(b.items())).items()]
     for i in range(0, len(data1)):
         data[i].update(data1[i])
+
+    for i in data:
+        if i['num'] == 1:
+            if i["score"] > 0.9:
+                i['score_comment'] = "Excellent, the website is able to withstand DoS attacks"
+            elif 0.6 < i["score"] < 0.9:
+                i["score_comment"] = "The website shows early concerns of being easily" \
+                                     " disrupt by the Denial of Service attack."
+            else:
+                i["score_comment"] = "The website is very vulnerable to the Denial of Service attack"
+        elif i['num'] == 2:
+            if i["score"] > 0.8:
+                i['score_comment'] = "Excellent, the website is able to withstand DoS attacks in this magnitude."
+            elif 0.5 < i["score"] < 0.8:
+                i["score_comment"] = "The website shows early concerns of being easily" \
+                                     " disrupt by the Denial of Service attack in this magnitude."
+            else:
+                i["score_comment"] = "The website is very vulnerable to the Denial of Service attack in this magnitude."
+        elif i['num'] == 3:
+            if i["score"] > 0.7:
+                i['score_comment'] = "Excellent, the website is able to withstand DoS attacks in this magnitude."
+            elif 0.4 < i["score"] < 0.7:
+                i["score_comment"] = "The website shows early concerns of being easily" \
+                                     " disrupt by the Denial of Service attack in this magnitude."
+            else:
+                i["score_comment"] = "The website is very vulnerable to the Denial of Service attack in this magnitude."
+        elif i['num'] == 4:
+            if i["score"] > 0.6:
+                i['score_comment'] = "Excellent, the website is able to withstand DoS attacks in this magnitude."
+            elif 0.3 < i["score"] < 0.6:
+                i["score_comment"] = "The website shows early concerns of being easily" \
+                                     " disrupt by the Denial of Service attack in this magnitude."
+            else:
+                i["score_comment"] = "The website is very vulnerable to the Denial of Service attack in this magnitude."
+        else:
+            if i["score"] > 0.5:
+                i['score_comment'] = "Excellent, the website is able to withstand DoS attacks in this magnitude."
+            elif 0.6 < i["score"] < 0.9:
+                i["score_comment"] = "The website shows early concerns of being easily" \
+                                     " disrupt by the Denial of Service attack in this magnitude."
+            else:
+                i["score_comment"] = "The website is very vulnerable to the Denial of Service attack in this magnitude."
+
     return data
 
 app = Flask(__name__)
@@ -96,6 +139,12 @@ def getResult(pid, fix):
         elif grandScore >= 5:
             return [grandScore, "VERY CRITICAL", "RED"]
 
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+
 def getSolution(os, atk):
     return [dict(number=row[0], entry=row[1]) for row in database.getSolutions(os,atk)]
 
@@ -103,6 +152,11 @@ def getSolution(os, atk):
 def launchreport():
     global distData, dataDict, solution
     return render_template('report.html', dataDisplay=distData, dataDicts=dataDict, solutions=solution)
+
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    shutdown_server()
+    return 'Server shutting down...'
 
 @app.route("/<numbers>")
 def setid(numbers):

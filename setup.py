@@ -1,20 +1,19 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
-    name='dosart',
-    version='1.0d',
-    packages=[''],
-    url='',
+    name='DoS Launcher with Reporting and Suggestion Tool',
+    version='2.2',
+    url='http://kaibuku.com',
+    packages=["app"],
     license='MIT',
-    package=['app'],
-    Include_package_data=True,
     author='Liew',
     author_email='pandawarrior91@gmail.com',
     include_package_data=True,
-    description='Denial of Service Attack and Reporting Tool (DoSART)',
+    description='To provide penetration tester the tool to test Dos Attacks against their own web server',
+    long_description=open("README.txt").read(),
     install_requires=[
         "flask",
         "pygal",
-        "Pillow",
+        "requests",
         ],
-)
+    )

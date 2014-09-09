@@ -1,2 +1,5 @@
 recursive-include app/templates *
 recursive-include app/static *.css
+recursive-include app *.db
+include *.sh
+include run.py
